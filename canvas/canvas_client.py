@@ -3,10 +3,8 @@ import threading
 from .parse import parse_message
 import time
 
-server_ip = "192.168.1.123"
-
 class CanvasClient:
-    def __init__(self):
+    def __init__(self, server_ip):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PAIR)
         self.socket.connect("tcp://{}:5555".format(server_ip))
