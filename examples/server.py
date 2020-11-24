@@ -4,7 +4,7 @@
 #   Expects b"Hello" from client, replies with b"World"
 #
 
-from ..canvas.canvas_server import CanvasServer
+from remote_canvas.canvas_server import CanvasServer
 
 if __name__ == "__main__":
     server = CanvasServer()

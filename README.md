@@ -4,7 +4,7 @@ Proof of concept idea to remotely render a GUI. Uses zmq to transmit the layout 
 # Installation
 Linux:
 - `python3 -m pip install requirements.txt`
-- `python3 -m pip install -e .`
+- `python3 -m pip install .`
 
 iOS:
 - Get the contents of `canvas/canvas_server_ios.py` into a file in Pyto
