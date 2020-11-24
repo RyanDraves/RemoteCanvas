@@ -9,25 +9,19 @@ class CanvasServer:
 
     def __init__(self):
         self.context = zmq.Context()
-        self.handshake_socket = self.context.socket(zmq.REP)
-        self.handshake_socket.bind("tcp://*:5555")
-        self.layout_socket = self.context.socket(zmq.SUB)
-        self.layout_socket.connect("tcp://localhost:5556")
-        self.layout_socket.setsockopt(zmq.SUBSCRIBE, b'gui')
-        self.event_socket = self.context.socket(zmq.PUB)
-        self.event_socket.bind("tcp://*:5557")
+        self.socket = self.context.socket(zmq.PAIR)
+        self.socket.bind("tcp://*:5555")
 
         self.reply_map = {}
 
         self.listen_for_layout()
 
     def listen_for_layout(self):
-        _ = self.handshake_socket.recv()
-        self.handshake_socket.send(b'.')
+        # Handshake
+        _ = self.socket.recv()
+        self.socket.send(b'.')
 
-        print("Give layout pls")
-        message = self.layout_socket.recv()
-        print("Recv layout")
+        message = self.socket.recv()
         header, body = parse_message(message)
 
         if header == b'gui':
@@ -55,7 +49,7 @@ class CanvasServer:
                 break
 
             if event in self.reply_map:
-                send_msg = b'cbk' + b' ' + self.reply_map[event]
-                self.event_socket.send(send_msg)
+                send_msg = b'cbk' + b':' + self.reply_map[event]
+                self.socket.send(send_msg)
 
         self.window.close()

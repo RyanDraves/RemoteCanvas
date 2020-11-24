@@ -1,5 +1,5 @@
 def parse_message(message):
-    tmp = message.split(b' ')
+    tmp = message.split(b':')
     assert(len(tmp) == 2), "Expected one `:` seperator for header and body, got\n{}".format(message)
     header, body = tmp
     body = body.split(b';')
