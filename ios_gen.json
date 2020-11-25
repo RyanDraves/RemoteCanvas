@@ -1,0 +1,28 @@
+{
+    "remote_canvas/constants.py": {
+        "ban": [
+        ]
+    },
+    "remote_canvas/parse.py": {
+        "ban": [
+        ]
+    },
+    "remote_canvas/handshake.py": {
+        "ban": [
+            "from .constants import *\n"
+        ]
+    },
+    "remote_canvas/ios_gui.py": {
+        "ban": [
+            "from .parse import parse_layout\n"
+        ]
+    },
+    "remote_canvas/canvas_server.py": {
+        "ban": [
+            "from .parse import parse_message, parse_layout\n",
+            "from .constants import *\n",
+            "from .handshake import handshake_server\n",
+            "import sys\nif sys.platform == \"linux\":\n    from .linux_gui import *\nelif sys.platform == \"ios\":\n    from .ios_gui import *"
+        ]
+    }
+}

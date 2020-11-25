@@ -12,10 +12,7 @@ def on_stop():
     print("Stopping")
 
 if __name__ == "__main__":
-    server_ip = "192.168.1.123"
-    if len(sys.argv) >= 2:
-        server_ip = sys.argv[1]
-    canvas = CanvasClient(server_ip = server_ip)
+    canvas = CanvasClient()
     canvas.register_button("Explore", on_explore)
     canvas.register_button("Solve", on_solve)
     canvas.register_button("Stop", on_stop)

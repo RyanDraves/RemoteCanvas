@@ -1,55 +1,49 @@
 import zmq
-import PySimpleGUI as sg
+import threading
 from .parse import parse_message, parse_layout
+from .constants import *
+from .handshake import handshake_server
+import sys
+if sys.platform == "linux":
+    from .linux_gui import *
+elif sys.platform == "ios":
+    from .ios_gui import *
 
 class CanvasServer:
-    type_map = {
-        b'b': sg.Button
-    }
-
     def __init__(self):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PAIR)
-        self.socket.bind("tcp://*:5555")
+        self.socket.bind("tcp://*:{}".format(ZMQ_PORT))
 
-        self.reply_map = {}
+        self.gui = Gui(self.handle_event)
 
         self.listen_for_layout()
 
+    def __del__(self):
+        if self.context is not None:
+            self.context.term()
+
+    def handle_event(self, reply):
+        send_msg = b'cbk' + b':' + reply
+        self.socket.send(send_msg)
+
     def listen_for_layout(self):
-        # Handshake
-        _ = self.socket.recv()
-        self.socket.send(b'.')
+        byzantine_cv = threading.Condition()
+        byzantine_event = threading.Event()
+        threading.Thread(target=handshake_server, args=[byzantine_cv, byzantine_event]).start()
 
         message = self.socket.recv()
         header, body = parse_message(message)
 
-        if header == b'gui':
-            self.render_layout(body)
+        assert(header == b'gui'), "Expected b'gui' got {}".format(header)
 
-    def render_layout(self, serialized_layout):
-        layout = []
+        # Notify the server handshake that it can stop trying to handshake
+        with byzantine_cv:
+            byzantine_event.set()
 
-        for component in serialized_layout:
-            _type, text, reply = parse_layout(component)
-            text = text.decode()
-            layout.append([self.type_map[_type](text)])
-            self.reply_map[text] = reply
+        # Send an ACK to receiving the GUI
+        ack_msg = b'gui' + b':' + b'ACK'
+        self.socket.send(ack_msg)
 
-        self.window = sg.Window("Demo", layout)
-
-        self.event_loop()
-
-    def event_loop(self):
-        while True:
-            event, values = self.window.read()
-
-            # End program if user closes window
-            if event == sg.WIN_CLOSED:
-                break
-
-            if event in self.reply_map:
-                send_msg = b'cbk' + b':' + self.reply_map[event]
-                self.socket.send(send_msg)
-
-        self.window.close()
+        # Blocking call to render the GUI
+        self.gui.render_layout(body)
