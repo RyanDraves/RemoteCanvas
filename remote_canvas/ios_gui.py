@@ -20,7 +20,7 @@ class Gui:
             text = text.decode()
             widget = Gui.type_map[_type](title=text)
             widget.size = (100, 50)
-            widget.center = (self.view.width / 2, self.view.height / (len(serialized_layout) + 1) * (i))
+            widget.center = (self.view.width / 2, self.view.height / (len(serialized_layout) + 1) * (i + 0.5))
             widget.flex = [
                 ui.FLEXIBLE_TOP_MARGIN,
                 ui.FLEXIBLE_BOTTOM_MARGIN,
